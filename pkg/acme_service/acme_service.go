@@ -89,7 +89,9 @@ func (a *AcmeService) StartLoop() {
 						siteLogger.WithField("duration", wait.String()).Debug("wait for lock")
 						time.Sleep(wait)
 					}
-					defer a.Store.Release(a.Config.InstanceId)
+					defer func() {
+						_ = a.Store.Release(a.Config.InstanceId)
+					}()
 					siteLogger.WithField("instance", a.Config.InstanceId).Debug("success lock")
 
 					defer func() {

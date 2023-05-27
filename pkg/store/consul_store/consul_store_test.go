@@ -24,7 +24,7 @@ func TestConsulStore(t *testing.T) {
 
 	defer func() {
 		// cleanup
-		consulStore.kvClient.DeleteTree(keyPrefix, nil)
+		_, _ = consulStore.kvClient.DeleteTree(keyPrefix, nil)
 	}()
 
 	privateKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)

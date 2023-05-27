@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"io/ioutil"
+	"io"
 	"net"
 	"net/http"
 	"os"
@@ -41,7 +41,7 @@ func CmdStart(c *cli.Context) error {
 	if err != nil {
 		logger.WithError(err).Fatal("failed open config file")
 	}
-	configBytes, err := ioutil.ReadAll(f)
+	configBytes, err := io.ReadAll(f)
 	if err != nil {
 		logger.WithError(err).Fatal("failed read config file")
 	}

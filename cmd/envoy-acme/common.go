@@ -21,7 +21,7 @@ func MustInitStore(c *cli.Context) store.Store {
 	case "consul", "CONSUL":
 		prefix := c.String("store-consul-prefix")
 		if prefix == "" {
-			panic(fmt.Sprintf("store-consul-prefix must not empty"))
+			panic("store-consul-prefix must not empty")
 		}
 		s, err = consul_store.NewConsulStore(prefix)
 		if err != nil {

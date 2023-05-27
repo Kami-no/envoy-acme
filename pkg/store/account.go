@@ -79,7 +79,7 @@ func (a *AccountKey) MarshalJSON() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	return json.Marshal(string(certOut.Bytes()))
+	return json.Marshal(certOut.String())
 }
 
 func NewAccountKey(key crypto.PrivateKey) AccountKey {

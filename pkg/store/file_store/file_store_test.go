@@ -4,7 +4,6 @@ import (
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
-	"io/ioutil"
 	"os"
 	"testing"
 	"time"
@@ -19,7 +18,7 @@ func TestFileStore(t *testing.T) {
 	assert := assert.New(t)
 	require := require.New(t)
 
-	tmpDir, err := ioutil.TempDir("", "acme-file-store")
+	tmpDir, err := os.MkdirTemp("", "acme-file-store")
 	require.Nil(err)
 	defer os.RemoveAll(tmpDir)
 

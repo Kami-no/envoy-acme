@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	godotenv.Load()
+	_ = godotenv.Load()
 
 	app := &cli.App{
 		Name: "envoy-acme",

@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -46,7 +46,7 @@ func (f *FileStore) FetchUser(caServer string, userId string) (*store.Account, e
 	}
 	defer fi.Close()
 
-	content, err := ioutil.ReadAll(fi)
+	content, err := io.ReadAll(fi)
 	if err != nil {
 		return nil, err
 	}
@@ -70,7 +70,7 @@ func (f *FileStore) WriteUser(caServer string, account *store.Account) error {
 		return err
 	}
 
-	err = ioutil.WriteFile(userPath, jsonBytes, 0700)
+	err = os.WriteFile(userPath, jsonBytes, 0700)
 	if err != nil {
 		return err
 	}
@@ -88,7 +88,7 @@ func (f *FileStore) FetchResource(symbolicDomainName string) (*store.Certificate
 	}
 	defer fi.Close()
 
-	content, err := ioutil.ReadAll(fi)
+	content, err := io.ReadAll(fi)
 	if err != nil {
 		return nil, err
 	}
@@ -108,7 +108,7 @@ func (f *FileStore) WriteResource(symbolicDomainName string, resource *store.Cer
 		return err
 	}
 
-	err = ioutil.WriteFile(resourcePath, jsonBytes, 0700)
+	err = os.WriteFile(resourcePath, jsonBytes, 0700)
 	if err != nil {
 		return err
 	}
@@ -127,7 +127,7 @@ func (f *FileStore) Lock(id string, timeout time.Duration) (bool, error) {
 		return false, err
 	}
 
-	currentContent, err := ioutil.ReadAll(lockFile)
+	currentContent, err := io.ReadAll(lockFile)
 	if err != nil {
 		return false, err
 	}
@@ -161,7 +161,7 @@ func (f *FileStore) Release(id string) error {
 	}
 	defer lockFile.Close()
 
-	currentContent, err := ioutil.ReadAll(lockFile)
+	currentContent, err := io.ReadAll(lockFile)
 	if err != nil {
 		return err
 	}
