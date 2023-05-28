@@ -146,3 +146,26 @@ static_resources:
             address:
               socket_address: {address: 127.0.0.1, port_value: 20000 }
 ```
+
+### Example docker-compose.yml
+
+```yaml
+---
+version: '3.3'
+services:
+  envoy:
+    container_name: envoy-acme
+    image: ghcr.io/kami-no/envoy-acme:latest
+    volumes:
+      - ./sites.yaml:/etc/envoy-acme/sites.yaml
+      - ./data/:/etc/envoy-acme/data
+    command:
+      - 'envoy-acme'
+      - 'start'
+      - '--config'
+      - '/etc/envoy-acme/sites.yaml'
+      - '--store-file-base'
+      - '/etc/envoy-acme/data'
+    network_mode: host
+    restart: unless-stopped
+```
