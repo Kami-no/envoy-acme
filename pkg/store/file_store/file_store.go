@@ -70,7 +70,7 @@ func (f *FileStore) WriteUser(caServer string, account *store.Account) error {
 		return err
 	}
 
-	err = os.WriteFile(userPath, jsonBytes, 0700)
+	err = os.WriteFile(userPath, jsonBytes, 0600)
 	if err != nil {
 		return err
 	}
@@ -108,7 +108,7 @@ func (f *FileStore) WriteResource(symbolicDomainName string, resource *store.Cer
 		return err
 	}
 
-	err = os.WriteFile(resourcePath, jsonBytes, 0700)
+	err = os.WriteFile(resourcePath, jsonBytes, 0600)
 	if err != nil {
 		return err
 	}
@@ -117,7 +117,7 @@ func (f *FileStore) WriteResource(symbolicDomainName string, resource *store.Cer
 
 func (f *FileStore) Lock(id string, timeout time.Duration) (bool, error) {
 	filePath := lockFilePath(f.baseFilePath)
-	lockFile, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE, 0700)
+	lockFile, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE, 0600)
 	if err != nil {
 		return false, err
 	}
@@ -155,7 +155,7 @@ func (f *FileStore) Lock(id string, timeout time.Duration) (bool, error) {
 }
 func (f *FileStore) Release(id string) error {
 	filePath := lockFilePath(f.baseFilePath)
-	lockFile, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE, 0700)
+	lockFile, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE, 0600)
 	if err != nil {
 		return err
 	}
