@@ -70,6 +70,7 @@ OPTIONS:
 ### Sites config
 
 ```yaml
+---
 # site.yaml
 sites:
   - name: setting-names     # It will be the setting name of SDS
@@ -97,54 +98,91 @@ LOG_LEVEL=debug  # For more information --help
 ### Example envoy.yaml
 
 ```yaml
+---
+layered_runtime:
+  layers:
+    - name: static_layer_0
+      static_layer:
+        envoy:
+          resource_limits:
+            listener:
+              example_listener_name:
+                connection_limit: 500
+        overload:
+          global_downstream_max_connections: 1000
+
+admin:
+  address:
+    socket_address:
+      address: 127.0.0.1
+      port_value: 29900
+
+node:
+  cluster: test-cluster
+  id: test-id
+
 static_resources:
   listeners:
-  - name: listener_0
-    address:
-      socket_address: { address: 0.0.0.0, port_value: 80 }
-    filter_chains:
-    - filters:
-      - name: envoy.http_connection_manager
-        config:
-          stat_prefix: ingress_http
-          route_config:
-            name: route
-            virtual_hosts:
-            - name: app_service
-              domains: ["*"]
-              routes:
-              - match: { prefix: "/" }
-                direct_response:
-                  status: 200
-                  body:
-                    inline_string: hello envoy
-          http_filters:
-          - name: envoy.router
-      transport_socket:
-        name: envoy.transport_sockets.tls
-        typed_config:
-          "@type": type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.DownstreamTlsContext
-          common_tls_context:
-            tls_certificate_sds_secret_configs:
-            - name: "setting-name"
-              sds_config:
-                resource_api_version: v3
-                api_config_source:
-                  api_type: GRPC
-                  transport_api_version: v3
-                  grpc_services:
-                    envoy_grpc:
-                      cluster_name: envoy_acme_sds_cluster
+    - name: listener_0
+      address:
+        socket_address:
+          address: 0.0.0.0
+          port_value: 20080
+      filter_chains:
+        - filters:
+            - name: envoy.filters.network.http_connection_manager
+              typed_config:
+                "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+                stat_prefix: listener_0
+                http_filters:
+                  - name: envoy.filters.http.router
+                    typed_config:
+                      "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+                route_config:
+                  name: route
+                  virtual_hosts:
+                    - name: app_service
+                      domains:
+                        - "*"
+                      routes:
+                        - match:
+                            prefix: "/"
+                          direct_response:
+                            status: 200
+                            body:
+                              inline_string: hello envoy
+          transport_socket:
+            name: envoy.transport_sockets.tls
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.DownstreamTlsContext
+              common_tls_context:
+                tls_certificate_sds_secret_configs:
+                  - name: "setting-name"
+                    sds_config:
+                      resource_api_version: v3
+                      api_config_source:
+                        api_type: GRPC
+                        transport_api_version: v3
+                        grpc_services:
+                          envoy_grpc:
+                            cluster_name: envoy_acme_sds_cluster
   clusters:
-  - name: envoy_acme_sds_cluster
-    connect_timeout: 0.25s
-    http2_protocol_options: {}
-    load_assignment:
-      endpoints:
-      - lb_endpoints:
-        - endpoint:
-            address:
-              socket_address: {address: 127.0.0.1, port_value: 20000 }
+    - name: envoy_acme_sds_cluster
+      connect_timeout: 0.25s
+      load_assignment:
+        cluster_name: envoy_acme_sds_cluster
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: 127.0.0.1
+                      port_value: 20000
+      typed_extension_protocol_options:
+        envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
+          "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
+          explicit_http_config:
+            http2_protocol_options: {}
 ```
 
 ### Example docker-compose.yml
@@ -162,10 +200,8 @@ services:
     command:
       - 'envoy-acme'
       - 'start'
-      - '--config'
-      - '/etc/envoy-acme/sites.yaml'
-      - '--store-file-base'
-      - '/etc/envoy-acme/data'
+      - '--config /etc/envoy-acme/sites.yaml'
+      - '--store-file-base /etc/envoy-acme/data'
     network_mode: host
     restart: unless-stopped
 ```
