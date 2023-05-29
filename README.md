@@ -193,15 +193,17 @@ version: '3.3'
 services:
   envoy:
     container_name: envoy-acme
-    image: ghcr.io/kami-no/envoy-acme:latest
+    image: ghcr.io/kami-no/envoy-acme:dev
     volumes:
       - ./sites.yaml:/etc/envoy-acme/sites.yaml
       - ./data/:/etc/envoy-acme/data
     command:
       - 'envoy-acme'
+      - '--store-file-base'
+      - '/etc/envoy-acme/data'
       - 'start'
-      - '--config /etc/envoy-acme/sites.yaml'
-      - '--store-file-base /etc/envoy-acme/data'
+      - '--config'
+      - '/etc/envoy-acme/sites.yaml'
     network_mode: host
     restart: unless-stopped
 ```
