@@ -12,6 +12,7 @@ import (
 	envoy_service_secret_v3 "github.com/envoyproxy/go-control-plane/envoy/service/secret/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/cache/types"
 	"github.com/envoyproxy/go-control-plane/pkg/cache/v3"
+	"github.com/envoyproxy/go-control-plane/pkg/resource/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/server/v3"
 	"github.com/pfremm/envoy-acme/pkg/common"
 	"github.com/prometheus/client_golang/prometheus"
@@ -69,7 +70,7 @@ func (x *XdsService) RunServer(ctx context.Context, listener net.Listener, updat
 	go func() {
 		for {
 			upstreams := <-update
-			err := snapshotCache.SetSnapshot("default", generateSnapshot(upstreams))
+			err := snapshotCache.SetSnapshot(context.Background(), "default", generateSnapshot(upstreams))
 			if err != nil {
 				panic(err)
 			}
@@ -83,7 +84,7 @@ func (x *XdsService) RunServer(ctx context.Context, listener net.Listener, updat
 	return grpcServer.Serve(listener)
 }
 
-func generateSnapshot(notification *common.Notification) cache.Snapshot {
+func generateSnapshot(notification *common.Notification) *cache.Snapshot {
 	var resources []types.Resource
 
 	for _, cert := range notification.Certificates {
@@ -107,5 +108,15 @@ func generateSnapshot(notification *common.Notification) cache.Snapshot {
 		resources = append(resources, secret)
 	}
 
-	return cache.NewSnapshot(fmt.Sprintf("%d", time.Now().Unix()), nil, nil, nil, nil, nil, resources)
+	snapshot, err := cache.NewSnapshot(
+		fmt.Sprintf("%d", time.Now().Unix()),
+		map[resource.Type][]types.Resource{
+			resource.EndpointType: resources,
+		},
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	return snapshot
 }
